@@ -1,7 +1,7 @@
 /* --- 1. FOND SYMPA (Parchemin) --- */
 body {
     font-family: 'Georgia', serif;
-    background-image: url('parchemin.jpg');
+    background-image: url('Parchemin.jpg');
     background-color: #f0e8d9; 
     background-size: cover;
     background-attachment: fixed;
@@ -572,3 +572,4 @@ input[type=number].stat-input::-webkit-inner-spin-button {
 .sheet.view-mode .item-table td.edit-only {
     display: none;
 }
+
