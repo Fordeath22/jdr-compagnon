@@ -1,7 +1,7 @@
 /* --- 1. FOND SYMPA (Parchemin) --- */
 body {
     font-family: 'Georgia', serif;
-    background-image: url('Parchemin.jpg');
+    background-image: url('parchemin.jpg');
     background-color: #f0e8d9; 
     background-size: cover;
     background-attachment: fixed;
@@ -573,3 +573,15 @@ input[type=number].stat-input::-webkit-inner-spin-button {
     display: none;
 }
 
+/* --- 14. CORRECTION BOUTONS IMPORT/EXPORT --- */
+
+#btn-export,
+#btn-import,
+#btn-save,
+#btn-toggle-view {
+    font-size: 1.2em;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    line-height: 1;
+}
