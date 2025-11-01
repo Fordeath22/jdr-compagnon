@@ -1,8 +1,7 @@
 /* --- 1. FOND SYMPA (Parchemin) --- */
 body {
     font-family: 'Georgia', serif;
-    /* L'image est prioritaire, la couleur est un fallback */
-    background-image: url('parchemin.jpg'); /* Assurez-vous d'avoir ce fichier */
+    background-image: url('parchemin.jpg');
     background-color: #f0e8d9; 
     background-size: cover;
     background-attachment: fixed;
@@ -55,7 +54,7 @@ h1, h2 {
     }
     .notes-section textarea {
         flex-grow: 1; 
-        min-height: 450px; /* Augmentation de la hauteur min */
+        min-height: 450px;
     }
 }
 
@@ -147,7 +146,7 @@ input[type=number].stat-input::-webkit-inner-spin-button {
   margin: 0;
 }
 
-/* --- 6. LAYOUT STATS + SORTS --- */
+/* --- 6. LAYOUT STATS + SORTS (Corrigé) --- */
 .stats-and-slots-layout {
     display: grid;
     grid-template-columns: 1fr; /* 1 colonne par défaut (mobile) */
@@ -215,7 +214,7 @@ input[type=number].stat-input::-webkit-inner-spin-button {
 .skill-checks {
     display: flex;
     align-items: center;
-    flex-shrink: 0; /* Empêche les cases de "wrapper" */
+    flex-shrink: 0; 
 }
 .skill-checks input[type="checkbox"] {
     width: 16px;
@@ -403,34 +402,100 @@ input[type=number].stat-input::-webkit-inner-spin-button {
     border-radius: 5px;
     border: 1px solid #8c6a4d;
     z-index: 100;
+    
+    /* NOUVEAU: Styles pour la barre de gestion */
+    display: flex;
+    flex-wrap: wrap; 
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
 }
-.button-bar button {
+
+.char-manager {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-grow: 1; 
+}
+.char-manager label {
+    margin-bottom: 0; 
+    font-weight: bold;
+}
+.char-manager select {
+    font-family: 'Georgia', serif;
+    background-color: rgba(255, 255, 255, 0.7);
+    border: 1px solid #8c6a4d;
+    border-radius: 5px;
+    padding: 8px;
+    font-size: 1.1em;
+    max-width: 200px;
+}
+.char-manager button {
     background-color: #6b4f3b;
     color: white;
-    padding: 12px 20px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    font-size: 16px;
-    margin: 5px;
+    font-size: 1.5em; 
+    font-weight: bold;
+    width: 40px;
+    height: 40px;
+    line-height: 1.2;
 }
-.button-bar button:hover { background-color: #4a3729; }
+.char-manager button:hover {
+    background-color: #4a3729;
+}
+.char-manager #btn-delete {
+    background-color: #c0392b; 
+    font-size: 1.2em; 
+}
+.char-manager #btn-delete:hover {
+    background-color: #a02d22;
+}
+.char-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0; 
+}
+.char-actions button {
+    background-color: #6b4f3b;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em; /* Taille normale */
+    padding: 8px 12px; /* Boutons légèrement plus petits */
+    margin: 0; /* Annule le margin par défaut */
+}
+.char-actions button:hover {
+    background-color: #4a3729;
+}
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
 
-/* --- 12. STYLE INVENTAIRE (CORRECTION DU BUG) --- */
+
+/* --- 12. STYLE INVENTAIRE --- */
 #inventory-notes {
     min-height: 200px;
 }
 
 /* --- 13. MODE VUE (LECTURE SEULE) --- */
 
-/* Cache tous les boutons "edit-only" quand le mode est actif */
+/* Cache tous les boutons "edit-only" */
 .sheet.view-mode .edit-only {
     display: none;
 }
 
-/* Applique le style "verrouillé" à TOUS les inputs et textareas
-   SAUF CEUX qu'on veut garder éditables.
-*/
+/* Verrouille les champs fixes (sauf ceux qu'on veut garder éditables) */
 .sheet.view-mode input:not(#pv-current):not([id^="death-"]):not([id$="-current"]),
 .sheet.view-mode textarea:not(#char-notes):not(#inventory-notes) {
     background-color: transparent !important;
@@ -438,7 +503,7 @@ input[type=number].stat-input::-webkit-inner-spin-button {
     color: #3a2a1a !important;
     padding-left: 0;
     padding-right: 0;
-    pointer-events: none; /* C'est ce qui "verrouille" le champ */
+    pointer-events: none; 
 }
 
 /* Garde les champs "actuels" éditables, mais avec un style discret */
@@ -479,12 +544,12 @@ input[type=number].stat-input::-webkit-inner-spin-button {
     -moz-appearance: textfield;
 }
 
-/* Désactive (visuellement) les checkboxes de stats/compétences */
+/* Garde les checkboxes (JS, Maîtrise, Expertise) VISIBLES mais non cliquables */
 .sheet.view-mode .js-check,
 .sheet.view-mode .maitrise-check,
 .sheet.view-mode .expertise-check {
-    opacity: 1;
-    pointer-events: none; /* Empêche de cocher/décocher */
+    opacity: 1; /* Garde l'opacité normale */
+    pointer-events: none; /* Empêche le clic */
 }
 /* MAIS, garde les jets de sauvegarde (death saves) actifs ! */
 .sheet.view-mode input[id^="death-"] {
@@ -506,87 +571,4 @@ input[type=number].stat-input::-webkit-inner-spin-button {
 .sheet.view-mode .item-table th.edit-only,
 .sheet.view-mode .item-table td.edit-only {
     display: none;
-}
-
-/* --- 14. STYLES DE LA BARRE DE GESTION (NOUVEAU) --- */
-
-.sticky-top {
-    /* Transforme la barre en conteneur flex */
-    display: flex;
-    flex-wrap: wrap; /* Permet de passer à la ligne sur petit écran */
-    justify-content: space-between;
-    align-items: center;
-    gap: 10px;
-}
-
-.char-manager {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-grow: 1; /* Prend plus de place si possible */
-}
-
-.char-manager label {
-    margin-bottom: 0; /* Aligne le label */
-    font-weight: bold;
-}
-
-.char-manager select {
-    font-family: 'Georgia', serif;
-    background-color: rgba(255, 255, 255, 0.7);
-    border: 1px solid #8c6a4d;
-    border-radius: 5px;
-    padding: 8px;
-    font-size: 1.1em;
-    max-width: 200px;
-}
-
-/* Style pour les boutons + et Corbeille */
-.char-manager button {
-    background-color: #6b4f3b;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 1.5em; /* Gros + */
-    font-weight: bold;
-    width: 40px;
-    height: 40px;
-    line-height: 1.2;
-}
-.char-manager button:hover {
-    background-color: #4a3729;
-}
-.char-manager #btn-delete {
-    background-color: #c0392b; /* Rouge pour supprimer */
-    font-size: 1.2em; /* Aligne la corbeille */
-}
-.char-manager #btn-delete:hover {
-    background-color: #a02d22;
-}
-
-
-.char-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-shrink: 0; /* Ne se réduit pas */
-}
-
-.char-actions button {
-    padding: 8px 12px; /* Boutons légèrement plus petits */
-    font-size: 1em;
-    margin: 0; /* Annule le margin par défaut */
-}
-
-/* Input d'importation caché */
-.visually-hidden {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    padding: 0;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    border: 0;
 }
