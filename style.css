@@ -56,6 +56,20 @@ h1, h2 {
         flex-grow: 1; 
         min-height: 450px;
     }
+    .sticky-top {
+        flex-direction: row; /* Rétablit l'horizontal sur PC */
+        justify-content: space-between;
+    }
+    .char-manager {
+        width: auto; /* Annule la largeur de 100% */
+        flex-grow: 1; /* Reprend son comportement d'extension */
+        justify-content: flex-start; /* Aligne à gauche */
+    }
+    .char-actions {
+        width: auto; /* Annule la largeur de 100% */
+        flex-shrink: 0; /* Reprend son comportement fixe */
+        justify-content: flex-end; /* Aligne à droite */
+    }
 }
 
 /* --- 4. INPUTS & BOUTONS --- */
@@ -403,11 +417,10 @@ input[type=number].stat-input::-webkit-inner-spin-button {
     border: 1px solid #8c6a4d;
     z-index: 100;
     
-    /* NOUVEAU: Styles pour la barre de gestion */
+    /* Styles pour la barre de gestion */
     display: flex;
-    flex-wrap: wrap; 
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column; /* Empile les enfants */
+    align-items: center;  /* Centre les blocs */
     gap: 10px;
 }
 
@@ -415,7 +428,8 @@ input[type=number].stat-input::-webkit-inner-spin-button {
     display: flex;
     align-items: center;
     gap: 8px;
-    flex-grow: 1; 
+    width: 100%; /* Prend toute la largeur */
+    justify-content: center; /* Centre les éléments */
 }
 .char-manager label {
     margin-bottom: 0; 
@@ -429,6 +443,8 @@ input[type=number].stat-input::-webkit-inner-spin-button {
     padding: 8px;
     font-size: 1.1em;
     max-width: 200px;
+    flex-grow: 1; /* Permet au sélecteur de s'agrandir */
+    min-width: 0; /* TRÈS IMPORTANT: Permet au sélecteur de rétrécir */
 }
 .char-manager button {
     background-color: #6b4f3b;
@@ -456,7 +472,8 @@ input[type=number].stat-input::-webkit-inner-spin-button {
     display: flex;
     align-items: center;
     gap: 8px;
-    flex-shrink: 0; 
+    width: 100%; /* Prend toute la largeur */
+    justify-content: center; /* Centre les éléments */
 }
 .char-actions button {
     background-color: #6b4f3b;
@@ -585,4 +602,3 @@ input[type=number].stat-input::-webkit-inner-spin-button {
     padding: 0;
     line-height: 1;
 }
-
