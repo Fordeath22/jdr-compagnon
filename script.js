@@ -10,30 +10,106 @@ if ('serviceWorker' in navigator) {
 // --- Logique de l'application ---
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- 1. FONCTIONS UTILITAIRES ---
+    // --- 1. CONSTANTES & VARIABLES GLOBALES ---
+    
+    const DB_KEY = 'jdrCompagnonDB_v1'; // La clé de notre "base de données"
+    const OLD_KEY = 'maFichePersonnage'; // Clé de l'ancienne version
+    let currentCharacterId = null;     // L'ID du personnage en cours d'édition
 
+    // --- NOUVEAU: SCRIPT DE MIGRATION AUTOMATIQUE ---
+    (function migrateOldData() {
+        const oldDataString = localStorage.getItem(OLD_KEY);
+        if (!oldDataString) {
+            // Pas d'ancienne fiche, on ne fait rien.
+            return;
+        }
+
+        try {
+            const oldCharacter = JSON.parse(oldDataString);
+            if (!oldCharacter) {
+                localStorage.removeItem(OLD_KEY); // Fichier corrompu
+                return;
+            }
+
+            const dbString = localStorage.getItem(DB_KEY);
+            const db = dbString ? JSON.parse(dbString) : {};
+
+            // Vérifie si ce personnage (par nom) n'est pas déjà migré
+            const alreadyMigrated = Object.values(db).some(
+                (char) => char.name === oldCharacter.name
+            );
+
+            if (alreadyMigrated) {
+                console.log("Migration déjà effectuée.");
+                localStorage.removeItem(OLD_KEY); // Nettoyage
+                return;
+            }
+
+            // On migre !
+            const newId = `char-${Date.now()}-migrated`;
+            // (Mise à jour pour la nouvelle structure de portrait)
+            if (localStorage.getItem('maFichePortrait')) {
+                oldCharacter.portraitData = localStorage.getItem('maFichePortrait');
+                localStorage.removeItem('maFichePortrait');
+            }
+            
+            db[newId] = oldCharacter;
+            localStorage.setItem(DB_KEY, JSON.stringify(db));
+
+            // On supprime l'ancienne sauvegarde
+            localStorage.removeItem(OLD_KEY);
+
+            alert(`Migration automatique réussie pour : ${oldCharacter.name || 'Ancien Personnage'} !`);
+            
+        } catch (error) {
+            console.error("Échec de la migration : ", error);
+            alert("Une erreur est survenue lors de la migration de votre ancien personnage.");
+        }
+    })();
+    // --- FIN DU SCRIPT DE MIGRATION ---
+
+
+    // --- 2. FONCTIONS UTILITAIRES ---
+
+    /** Génère un ID unique simple */
+    function generateUUID() {
+        return `char-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    }
+
+    /** Récupère la base de données depuis localStorage */
+    function getDatabase() {
+        const db = localStorage.getItem(DB_KEY);
+        return db ? JSON.parse(db) : {};
+    }
+
+    /** Sauvegarde la base de données dans localStorage */
+    function saveDatabase(db) {
+        localStorage.setItem(DB_KEY, JSON.stringify(db));
+    }
+
+    /** Calcule le modificateur de stat */
     function calculateBonus(statValue) {
         const bonus = Math.floor((statValue - 10) / 2);
         return (bonus >= 0) ? `+${bonus}` : `${bonus}`;
     }
 
+    /** Crée une ligne dans un tableau (Attaque ou Sort) */
     function createItemRow(name, bonus, dmg, listElement) {
         if (!name) return;
         const tr = document.createElement('tr');
-        // Ajout de la classe "edit-only" à la dernière cellule (td)
         tr.innerHTML = `
             <td>${name}</td>
             <td>${bonus}</td>
             <td>${dmg}</td>
             <td class="edit-only"><button class="delete-btn">X</button></td>
         `; 
-        
         tr.querySelector('.delete-btn').addEventListener('click', () => {
             tr.remove();
         });
         listElement.appendChild(tr);
     }
     
+    /** Met à jour tous les bonus dérivés (Stats + Initiative) */
     function updateAllBonuses() {
         statInputs.forEach(input => {
             const bonusSpan = document.getElementById(input.id.replace('stat-', 'bonus-'));
@@ -45,10 +121,50 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('initiative').value = dexBonus;
     }
 
+    /** Efface tous les champs du formulaire */
+    function clearForm() {
+        // Text inputs
+        document.querySelectorAll('input[type="text"], input[type="number"], textarea').forEach(input => {
+            // Remet les valeurs par défaut pour les stats
+            if (input.classList.contains('stat-input')) {
+                input.value = '10';
+            } else if (input.id === 'bonus-maitrise') {
+                input.value = '+2';
+            } else if (input.id === 'ca') {
+                input.value = '10';
+            } else {
+                input.value = '';
+            }
+        });
+        // Checkboxes
+        document.querySelectorAll('input[type="checkbox"]').forEach(check => {
+            check.checked = false;
+        });
+        // Listes
+        attackList.innerHTML = '';
+        spellList.innerHTML = '';
+        // Portrait
+        portraitImg.src = '';
+        portraitLabel.style.display = 'block';
+        
+        updateAllBonuses();
+    }
 
-    // --- 2. SÉLECTION DES ÉLÉMENTS ---
 
+    // --- 3. SÉLECTION DES ÉLÉMENTS (INPUTS, BOUTONS, LISTES) ---
+
+    // Conteneur principal
     const sheetContainer = document.querySelector('.sheet');
+
+    // Gestionnaire de personnages
+    const charSelect = document.getElementById('char-select');
+    const newCharBtn = document.getElementById('btn-new');
+    const deleteCharBtn = document.getElementById('btn-delete');
+    const exportBtn = document.getElementById('btn-export');
+    const importBtn = document.getElementById('btn-import');
+    const importFileInput = document.getElementById('import-file');
+    
+    // Tous les autres champs...
     const charName = document.getElementById('char-name');
     const charClass = document.getElementById('char-class');
     const charNotes = document.getElementById('char-notes');
@@ -83,123 +199,61 @@ document.addEventListener('DOMContentLoaded', () => {
     const addSpellBtn = document.getElementById('btn-add-spell');
     const spellList = document.getElementById('spell-list'); 
     const saveButton = document.getElementById('btn-save');
-    const loadButton = document.getElementById('btn-load');
     const viewToggleButton = document.getElementById('btn-toggle-view');
 
-    // NOUVEAU: Listes ciblées pour le verrouillage
+    // Listes ciblées pour le verrouillage
     const fieldsToLock = document.querySelectorAll(
-        // Champs fixes
         '#char-name, #char-class, #bonus-maitrise, #ca, #pv-max, #des-vie, #seuil-blessure, #fatigue, #resistances, ' +
-        // Inputs de stats
-        '.stat-input, ' +
-        // Inputs de slots (max seulement)
-        '.spell-slot-input[id$="-max"]'
+        '.stat-input, .spell-slot-input[id$="-max"]'
     );
     const checksToLock = document.querySelectorAll(
-        // Checkboxes de compétences (MAIS PAS les jets de sauvegarde)
         '.js-check, .maitrise-check, .expertise-check'
     );
     
-    // --- 3. ÉVÉNEMENTS (EVENT LISTENERS) ---
+    // --- 4. LOGIQUE PRINCIPALE (CHARGEMENT, SAUVEGARDE, ETC.) ---
 
-    // A) Mise à jour auto des bonus et de l'initiative
-    statInputs.forEach(input => {
-        input.addEventListener('input', updateAllBonuses);
-    });
-
-    // B) Logique d'upload de portrait (Mise à jour pour Mode Jeu)
-    portraitContainer.addEventListener('click', () => {
-        if (!sheetContainer.classList.contains('view-mode')) {
-            portraitUpload.click(); 
+    /** Remplit le menu déroulant <select> */
+    function loadCharacterList() {
+        const db = getDatabase();
+        const charIds = Object.keys(db);
+        
+        charSelect.innerHTML = '';
+        
+        if (charIds.length === 0) {
+            currentCharacterId = null;
+            return null; 
         }
-    });
-    portraitUpload.addEventListener('change', (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const imgData = e.target.result;
-                portraitImg.src = imgData; 
-                portraitLabel.style.display = 'none'; 
-                try {
-                    localStorage.setItem('maFichePortrait', imgData);
-                } catch (e) {
-                    alert("Erreur : L'image est trop volumineuse pour être sauvegardée ! Réduisez sa taille.");
-                }
-            };
-            reader.readAsDataURL(file);
-        }
-    });
 
-    // C) Ajout d'une attaque
-    addAttackBtn.addEventListener('click', () => {
-        createItemRow(newAttackName.value, newAttackBonus.value, newAttackDmg.value, attackList);
-        newAttackName.value = ''; newAttackBonus.value = ''; newAttackDmg.value = '';
-    });
-
-    // D) Ajout d'un sort
-    addSpellBtn.addEventListener('click', () => {
-        createItemRow(newSpellName.value, newSpellBonus.value, newSpellDmg.value, spellList);
-        newSpellName.value = ''; newSpellBonus.value = ''; newSpellDmg.value = '';
-    });
-
-    // E) Sauvegarde des données
-    saveButton.addEventListener('click', () => {
-        const character = {
-            name: charName.value,
-            class: charClass.value,
-            notes: charNotes.value,
-            bonusMaitrise: bonusMaitrise.value,
-            ca: ca.value,
-            pvMax: pvMax.value,
-            pvCurrent: pvCurrent.value,
-            desVie: desVie.value,
-            seuilBlessure: seuilBlessure.value,
-            fatigue: fatigue.value,
-            resistances: resistancesInput.value,
-            inventory: inventoryNotes.value, // Inventaire
-            stats: {},
-            js_maitrises: {},
-            maitrises: {},
-            expertises: {},
-            deathSaves: {},
-            attacks: [],
-            spells: [],
-            spellSlots: {}
-        };
-
-        // Sauvegarde Stats, Maîtrises, Décès, Slots...
-        statInputs.forEach(input => { character.stats[input.id] = input.value; });
-        jsChecks.forEach(check => { character.js_maitrises[check.id] = check.checked; });
-        maitriseChecks.forEach(check => { character.maitrises[check.id] = check.checked; });
-        expertiseChecks.forEach(check => { character.expertises[check.id] = check.checked; });
-        deathSaves.forEach(check => { character.deathSaves[check.id] = check.checked; });
-        spellSlots.forEach(input => { character.spellSlots[input.id] = input.value; });
-
-        // Sauvegarde Attaques & Sorts...
-        attackList.querySelectorAll('tr').forEach(tr => {
-            const cells = tr.querySelectorAll('td');
-            character.attacks.push({ name: cells[0].textContent, bonus: cells[1].textContent, dmg: cells[2].textContent });
-        });
-        spellList.querySelectorAll('tr').forEach(tr => {
-            const cells = tr.querySelectorAll('td');
-            character.spells.push({ name: cells[0].textContent, bonus: cells[1].textContent, dmg: cells[2].textContent });
+        charIds.forEach(id => {
+            const char = db[id];
+            const option = document.createElement('option');
+            option.value = id;
+            option.textContent = char.name || 'Personnage sans nom';
+            charSelect.appendChild(option);
         });
 
-        localStorage.setItem('maFichePersonnage', JSON.stringify(character));
-        alert('Personnage sauvegardé !');
-    });
+        if (currentCharacterId && db[currentCharacterId]) {
+            charSelect.value = currentCharacterId;
+        } else {
+            currentCharacterId = charIds[0];
+            charSelect.value = currentCharacterId;
+        }
+        
+        return currentCharacterId;
+    }
 
-    // F) Chargement des données
-    loadButton.addEventListener('click', () => {
-        const savedData = localStorage.getItem('maFichePersonnage');
-        if (!savedData) {
-            updateAllBonuses(); 
-            // alert('Aucune sauvegarde trouvée.'); // Commenté pour être moins bruyant
+    /** Charge les données du personnage (par ID) dans le formulaire */
+    function loadCharacter(id) {
+        const db = getDatabase();
+        const character = db[id];
+
+        if (!character) {
+            clearForm();
+            currentCharacterId = null;
             return;
         }
-
-        const character = JSON.parse(savedData);
+        
+        currentCharacterId = id; 
 
         // Remplir tous les champs texte
         charName.value = character.name || '';
@@ -241,10 +295,9 @@ document.addEventListener('DOMContentLoaded', () => {
             character.spells.forEach(item => createItemRow(item.name, item.bonus, item.dmg, spellList));
         }
         
-        // Charger l'image
-        const savedImg = localStorage.getItem('maFichePortrait');
-        if (savedImg) {
-            portraitImg.src = savedImg;
+        // Charger l'image (maintenant dans l'objet)
+        if (character.portraitData) {
+            portraitImg.src = character.portraitData;
             portraitLabel.style.display = 'none';
         } else {
             portraitImg.src = '';
@@ -252,52 +305,254 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         updateAllBonuses();
-        // alert('Personnage chargé !'); // Commenté pour être moins bruyant
+    }
+    
+    /** Sauvegarde le formulaire actuel dans l'objet du personnage sélectionné */
+    function saveCharacter() {
+        if (!currentCharacterId) {
+            alert('Aucun personnage sélectionné. Créez-en un nouveau d\'abord.');
+            return;
+        }
+
+        const db = getDatabase();
+        
+        const character = {
+            name: charName.value,
+            class: charClass.value,
+            notes: charNotes.value,
+            bonusMaitrise: bonusMaitrise.value,
+            ca: ca.value,
+            pvMax: pvMax.value,
+            pvCurrent: pvCurrent.value,
+            desVie: desVie.value,
+            seuilBlessure: seuilBlessure.value,
+            fatigue: fatigue.value,
+            resistances: resistancesInput.value,
+            inventory: inventoryNotes.value,
+            portraitData: portraitImg.src, // Sauvegarde l'image
+            stats: {},
+            js_maitrises: {},
+            maitrises: {},
+            expertises: {},
+            deathSaves: {},
+            attacks: [],
+            spells: [],
+            spellSlots: {}
+        };
+
+        // Sauvegarde Stats, Maîtrises, Décès, Slots...
+        statInputs.forEach(input => { character.stats[input.id] = input.value; });
+        jsChecks.forEach(check => { character.js_maitrises[check.id] = check.checked; });
+        maitriseChecks.forEach(check => { character.maitrises[check.id] = check.checked; });
+        expertiseChecks.forEach(check => { character.expertises[check.id] = check.checked; });
+        deathSaves.forEach(check => { character.deathSaves[check.id] = check.checked; });
+        spellSlots.forEach(input => { character.spellSlots[input.id] = input.value; });
+
+        // Sauvegarde Attaques & Sorts...
+        attackList.querySelectorAll('tr').forEach(tr => {
+            const cells = tr.querySelectorAll('td');
+            character.attacks.push({ name: cells[0].textContent, bonus: cells[1].textContent, dmg: cells[2].textContent });
+        });
+        spellList.querySelectorAll('tr').forEach(tr => {
+            const cells = tr.querySelectorAll('td');
+            character.spells.push({ name: cells[0].textContent, bonus: cells[1].textContent, dmg: cells[2].textContent });
+        });
+        
+        // Met à jour le personnage dans la BDD
+        db[currentCharacterId] = character;
+        saveDatabase(db);
+        
+        // Met à jour le nom dans la liste déroulante
+        loadCharacterList();
+        
+        alert('Personnage sauvegardé !');
+    }
+
+    /** Crée un nouveau personnage vide */
+    function createNewCharacter() {
+        const name = prompt("Nom du nouveau personnage :", "Nouveau Personnage");
+        if (!name) return; // Annulé
+
+        const newId = generateUUID();
+        
+        // Crée une fiche "vide" avec les stats par défaut
+        const newChar = {
+            name: name,
+            stats: { 
+                'stat-str': '10', 'stat-dex': '10', 'stat-con': '10', 
+                'stat-int': '10', 'stat-wis': '10', 'stat-cha': '10' 
+            },
+            pvMax: '10',
+            pvCurrent: '10'
+            // Le reste sera vide par défaut (null/undefined)
+        }; 
+
+        const db = getDatabase();
+        db[newId] = newChar;
+        saveDatabase(db);
+
+        currentCharacterId = newId;
+        loadCharacterList(); // Met à jour la liste
+        loadCharacter(newId); // Charge la fiche vide
+    }
+
+    /** Supprime le personnage actuel */
+    function deleteCurrentCharacter() {
+        if (!currentCharacterId) {
+            alert('Aucun personnage sélectionné.');
+            return;
+        }
+
+        const db = getDatabase();
+        const charName = db[currentCharacterId].name || "ce personnage";
+        
+        if (!confirm(`Voulez-vous vraiment supprimer ${charName} ? Cette action est irréversible.`)) {
+            return;
+        }
+
+        delete db[currentCharacterId];
+        saveDatabase(db);
+
+        const firstCharId = loadCharacterList();
+        loadCharacter(firstCharId);
+    }
+
+    /** Exporte le personnage actuel en fichier JSON */
+    function exportCharacter() {
+        if (!currentCharacterId) {
+            alert('Veuillez d\'abord charger un personnage à exporter.');
+            return;
+        }
+
+        const db = getDatabase();
+        const characterData = db[currentCharacterId];
+        const jsonString = JSON.stringify(characterData, null, 2); 
+        const blob = new Blob([jsonString], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        const safeName = (characterData.name || 'personnage').replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        a.download = `${safeName}.json`;
+        
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    /** Gère l'upload d'un fichier JSON */
+    function importCharacter(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const jsonString = e.target.result;
+                const importedData = JSON.parse(jsonString);
+                
+                if (!importedData || !importedData.name) {
+                    alert('Erreur : Fichier non valide ou nom de personnage manquant.');
+                    return;
+                }
+                
+                const newId = generateUUID();
+                importedData.name = `${importedData.name} (Importé)`; 
+                
+                const db = getDatabase();
+                db[newId] = importedData;
+                saveDatabase(db);
+                
+                currentCharacterId = newId;
+                loadCharacterList();
+                loadCharacter(newId);
+                
+                alert('Personnage importé avec succès !');
+
+            } catch (error) {
+                alert('Erreur lors de la lecture du fichier : ' + error.message);
+            }
+        };
+        
+        reader.readAsText(file);
+        event.target.value = null;
+    }
+
+
+    // --- 5. ÉVÉNEMENTS (EVENT LISTENERS) ---
+
+    // A) Mise à jour auto des bonus
+    statInputs.forEach(input => {
+        input.addEventListener('input', updateAllBonuses);
     });
 
-    // G) NOUVEAU : Logique du "Mode Jeu" (Verrouillage)
+    // B) Logique d'upload de portrait
+    portraitContainer.addEventListener('click', () => {
+        if (!sheetContainer.classList.contains('view-mode')) {
+            portraitUpload.click(); 
+        }
+    });
+    portraitUpload.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            // Affiche l'image. Elle sera sauvegardée dans l'objet au clic sur "Sauvegarder"
+            portraitImg.src = e.target.result; 
+            portraitLabel.style.display = 'none'; 
+        };
+        reader.readAsDataURL(file);
+    });
+
+    // C) Ajout d'une attaque / sort
+    addAttackBtn.addEventListener('click', () => {
+        createItemRow(newAttackName.value, newAttackBonus.value, newAttackDmg.value, attackList);
+        newAttackName.value = ''; newAttackBonus.value = ''; newAttackDmg.value = '';
+    });
+    addSpellBtn.addEventListener('click', () => {
+        createItemRow(newSpellName.value, newSpellBonus.value, newSpellDmg.value, spellList);
+        newSpellName.value = ''; newSpellBonus.value = ''; newSpellDmg.value = '';
+    });
+
+    // D) Logique du "Mode Jeu" (Verrouillage)
     viewToggleButton.addEventListener('click', () => {
         sheetContainer.classList.toggle('view-mode');
         const isViewMode = sheetContainer.classList.contains('view-mode');
         
         if (isViewMode) {
-            // --- On passe en MODE VUE ---
             viewToggleButton.textContent = '🔓 Déverrouiller (Mode Édition)';
-            
-            // Verrouille les champs texte/numériques fixes
-            fieldsToLock.forEach(field => {
-                field.readOnly = true;
-            });
-            
-            // Verrouille les checkboxes de stats/compétences
-            checksToLock.forEach(check => {
-            });
-            
-            // LES CHAMPS SUIVANTS RESTENT ÉDITABLES :
-            // - #pv-current
-            // - #char-notes
-            // - #inventory-notes
-            // - input[id^="death-"]
-            // - .spell-slot-input[id$="-current"]
-            
+            fieldsToLock.forEach(field => { field.readOnly = true; });
+            checksToLock.forEach(check => { check.disabled = true; }); // Sera "grisé"
         } else {
-            // --- On passe en MODE ÉDITION ---
             viewToggleButton.textContent = '🔒 Verrouiller (Mode Jeu)';
-            
-            // Déverrouille les champs
-            fieldsToLock.forEach(field => {
-                field.readOnly = false;
-            });
-            
-            // Déverrouille les checkboxes
-            checksToLock.forEach(check => {
-            });
-
-            // (L'initiative reste non-éditable car elle est calculée)
-            initiative.readOnly = true;
+            fieldsToLock.forEach(field => { field.readOnly = false; });
+            checksToLock.forEach(check => { check.disabled = false; });
+            initiative.readOnly = true; 
         }
     });
 
-    // --- 4. DÉMARRAGE INITIAL ---
-    loadButton.click(); // Charger auto au démarrage
+    // E) NOUVEAU: Événements de gestion de personnages
+    charSelect.addEventListener('change', () => {
+        loadCharacter(charSelect.value);
+    });
+    
+    saveButton.addEventListener('click', saveCharacter);
+    newCharBtn.addEventListener('click', createNewCharacter);
+    deleteCharBtn.addEventListener('click', deleteCurrentCharacter);
+    exportBtn.addEventListener('click', exportCharacter);
+    importBtn.addEventListener('click', () => importFileInput.click()); 
+    importFileInput.addEventListener('change', importCharacter);
+
+
+    // --- 6. DÉMARRAGE INITIAL ---
+    // (Cette fonction exécute d'abord la migration, PUIS charge la liste)
+    const firstCharId = loadCharacterList();
+    if (firstCharId) {
+        loadCharacter(firstCharId);
+    } else {
+        // S'il n'y a aucun personnage (même après migration), on en crée un
+        createNewCharacter();
+    }
 });
