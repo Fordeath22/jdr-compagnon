@@ -13,61 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 1. CONSTANTES & VARIABLES GLOBALES ---
     
     const DB_KEY = 'jdrCompagnonDB_v1'; // La clé de notre "base de données"
-    const OLD_KEY = 'maFichePersonnage'; // Clé de l'ancienne version
     let currentCharacterId = null;     // L'ID du personnage en cours d'édition
-
-    // --- NOUVEAU: SCRIPT DE MIGRATION AUTOMATIQUE ---
-    (function migrateOldData() {
-        const oldDataString = localStorage.getItem(OLD_KEY);
-        if (!oldDataString) {
-            // Pas d'ancienne fiche, on ne fait rien.
-            return;
-        }
-
-        try {
-            const oldCharacter = JSON.parse(oldDataString);
-            if (!oldCharacter) {
-                localStorage.removeItem(OLD_KEY); // Fichier corrompu
-                return;
-            }
-
-            const dbString = localStorage.getItem(DB_KEY);
-            const db = dbString ? JSON.parse(dbString) : {};
-
-            // Vérifie si ce personnage (par nom) n'est pas déjà migré
-            const alreadyMigrated = Object.values(db).some(
-                (char) => char.name === oldCharacter.name
-            );
-
-            if (alreadyMigrated) {
-                console.log("Migration déjà effectuée.");
-                localStorage.removeItem(OLD_KEY); // Nettoyage
-                return;
-            }
-
-            // On migre !
-            const newId = `char-${Date.now()}-migrated`;
-            // (Mise à jour pour la nouvelle structure de portrait)
-            if (localStorage.getItem('maFichePortrait')) {
-                oldCharacter.portraitData = localStorage.getItem('maFichePortrait');
-                localStorage.removeItem('maFichePortrait');
-            }
-            
-            db[newId] = oldCharacter;
-            localStorage.setItem(DB_KEY, JSON.stringify(db));
-
-            // On supprime l'ancienne sauvegarde
-            localStorage.removeItem(OLD_KEY);
-
-            alert(`Migration automatique réussie pour : ${oldCharacter.name || 'Ancien Personnage'} !`);
-            
-        } catch (error) {
-            console.error("Échec de la migration : ", error);
-            alert("Une erreur est survenue lors de la migration de votre ancien personnage.");
-        }
-    })();
-    // --- FIN DU SCRIPT DE MIGRATION ---
-
 
     // --- 2. FONCTIONS UTILITAIRES ---
 
@@ -384,7 +330,6 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             pvMax: '10',
             pvCurrent: '10'
-            // Le reste sera vide par défaut (null/undefined)
         }; 
 
         const db = getDatabase();
@@ -499,9 +444,9 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const reader = new FileReader();
         reader.onload = (e) => {
-            // Affiche l'image. Elle sera sauvegardée dans l'objet au clic sur "Sauvegarder"
             portraitImg.src = e.target.result; 
             portraitLabel.style.display = 'none'; 
+            // La sauvegarde se fait au clic sur "Sauvegarder"
         };
         reader.readAsDataURL(file);
     });
@@ -516,24 +461,34 @@ document.addEventListener('DOMContentLoaded', () => {
         newSpellName.value = ''; newSpellBonus.value = ''; newSpellDmg.value = '';
     });
 
-    // D) Logique du "Mode Jeu" (Verrouillage)
+    // D) Logique du "Mode Jeu" (Verrouillage sélectif)
     viewToggleButton.addEventListener('click', () => {
         sheetContainer.classList.toggle('view-mode');
         const isViewMode = sheetContainer.classList.contains('view-mode');
         
         if (isViewMode) {
+            // --- On passe en MODE VUE ---
             viewToggleButton.textContent = '🔓 Déverrouiller (Mode Édition)';
-            fieldsToLock.forEach(field => { field.readOnly = true; });
-            checksToLock.forEach(check => { check.disabled = true; }); // Sera "grisé"
+            // Verrouille les champs texte/numériques fixes
+            fieldsToLock.forEach(field => {
+                field.readOnly = true;
+            });
+            // Le style CSS s'occupe de bloquer les clics sur les checkboxes
+            
         } else {
+            // --- On passe en MODE ÉDITION ---
             viewToggleButton.textContent = '🔒 Verrouiller (Mode Jeu)';
-            fieldsToLock.forEach(field => { field.readOnly = false; });
-            checksToLock.forEach(check => { check.disabled = false; });
-            initiative.readOnly = true; 
+            // Déverrouille les champs
+            fieldsToLock.forEach(field => {
+                field.readOnly = false;
+            });
+            
+            // (L'initiative reste non-éditable car elle est calculée)
+            initiative.readOnly = true;
         }
     });
 
-    // E) NOUVEAU: Événements de gestion de personnages
+    // E) Événements de gestion de personnages
     charSelect.addEventListener('change', () => {
         loadCharacter(charSelect.value);
     });
@@ -547,12 +502,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // --- 6. DÉMARRAGE INITIAL ---
-    // (Cette fonction exécute d'abord la migration, PUIS charge la liste)
     const firstCharId = loadCharacterList();
     if (firstCharId) {
         loadCharacter(firstCharId);
     } else {
-        // S'il n'y a aucun personnage (même après migration), on en crée un
+        // S'il n'y a aucun personnage, on en crée un
         createNewCharacter();
     }
 });
