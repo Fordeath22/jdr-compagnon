@@ -521,6 +521,10 @@ input[type=number].stat-input::-webkit-inner-spin-button {
     padding-left: 0;
     padding-right: 0;
     pointer-events: none; 
+    overflow-wrap: break-word;  /* Force le texte à aller à la ligne */
+    width: 100% !important;     /* Force l'input à respecter la largeur du parent */
+    box-sizing: border-box;     /* S'assure que le padding ne le fait pas déborder */
+}
 }
 
 /* Garde les champs "actuels" éditables, mais avec un style discret */
@@ -539,7 +543,8 @@ input[type=number].stat-input::-webkit-inner-spin-button {
 
 /* Style pour les inputs numériques (stats, etc.) verrouillés */
 .sheet.view-mode input[type="number"] {
-    width: auto;
+    width: 100%;
+    box-sizing: border-box;
     font-weight: bold;
     padding: 5px 0; 
 }
@@ -602,3 +607,4 @@ input[type=number].stat-input::-webkit-inner-spin-button {
     padding: 0;
     line-height: 1;
 }
+
