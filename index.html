@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale-1.0">
     <title>Mon Compagnon JDR</title>
     <link rel="stylesheet" href="style.css">
     <meta name="theme-color" content="#6b4f3b">
@@ -12,9 +12,22 @@
 
     <div class="sheet">
         <div class="button-bar sticky-top">
-            <button id="btn-save" class="edit-only">💾 Sauvegarder</button>
-            <button id="btn-load" class="edit-only">📂 Charger</button>
-            <button id="btn-toggle-view">🔒 Verrouiller (Mode Jeu)</button>
+            
+            <div class="char-manager">
+                <label for="char-select">Personnage :</label>
+                <select id="char-select"></select>
+                <button id="btn-new" title="Nouveau Personnage">+</button>
+                <button id="btn-delete" class="edit-only" title="Supprimer Personnage">🗑️</button>
+            </div>
+            
+            <div class="char-actions">
+                <button id="btn-save" class="edit-only">💾 Sauvegarder</button>
+                <button id="btn-export" class="edit-only" title="Exporter ce personnage">📤 Exporter</button>
+                <button id="btn-import" class="edit-only" title="Importer un personnage">📥 Importer</button>
+                <button id="btn-toggle-view">🔒 Verrouiller</button>
+            </div>
+            
+            <input type="file" id="import-file" class="visually-hidden" accept=".json, .txt">
         </div>
 
         <h1>Fiche de Personnage</h1>
@@ -31,13 +44,11 @@
                     <label for="char-class">Classe :</label>
                     <input type="text" id="char-class" class="full-width">
                 </div>
-
                 <div class="header-grid">
                     <div class="header-box"><label for="bonus-maitrise">Bonus de Maîtrise</label><input type="text" id="bonus-maitrise" value="+2"></div>
                     <div class="header-box"><label for="ca">Classe d'Armure</label><input type="number" id="ca" value="10"></div>
                     <div class="header-box"><label for="initiative">Initiative</label><input type="text" id="initiative" value="+0" readonly></div>
                 </div>
-
                 <h2>Combat</h2>
                 <div class="combat-stats-grid">
                     <div class="pv-box">
@@ -55,7 +66,6 @@
                 </div>
 
                 <div class="stats-and-slots-layout">
-                    
                     <div class="stats-section">
                         <h2>Statistiques & Compétences</h2>
                         <div class="stats-container">
@@ -127,7 +137,6 @@
                             <div class="spell-slot-box"><label>Niv 9</label><div><input type="number" id="slot-9-current" class="spell-slot-input" placeholder="Act"> / <input type="number" id="slot-9-max" class="spell-slot-input" placeholder="Max"></div></div>
                         </div>
                     </div>
-
                 </div> <div class="list-section">
                     <h2>Inventaire (sur soi)</h2>
                     <textarea id="inventory-notes" class="full-width" rows="10" placeholder="ex: 3 potions de soin, 25 PO, Corde (15m), ..."></textarea>
