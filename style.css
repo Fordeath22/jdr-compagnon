@@ -2,7 +2,7 @@
 body {
     font-family: 'Georgia', serif;
     /* L'image est prioritaire, la couleur est un fallback */
-    background-image: url('parchemin.jpg'); /* Assurez-vous d'avoir ce fichier */
+    background-image: url('Parchemin.jpg'); /* Assurez-vous d'avoir ce fichier */
     background-color: #f0e8d9; 
     background-size: cover;
     background-attachment: fixed;
@@ -506,4 +506,5 @@ input[type=number].stat-input::-webkit-inner-spin-button {
 .sheet.view-mode .item-table th.edit-only,
 .sheet.view-mode .item-table td.edit-only {
     display: none;
+
 }
