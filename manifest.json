@@ -1,0 +1,16 @@
+{
+  "name": "Mon Compagnon JDR",
+  "short_name": "JDR Compagnon",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#f0e8d9",
+  "theme_color": "#6b4f3b",
+  "description": "Un compagnon pour gérer les fiches de personnage JDR.",
+  "icons": [
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

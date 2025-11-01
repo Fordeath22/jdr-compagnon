@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Compagnon JDR</title>
+    <link rel="stylesheet" href="style.css">
+    <meta name="theme-color" content="#6b4f3b">
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+
+    <div class="sheet">
+        <div class="button-bar sticky-top">
+            <button id="btn-save" class="edit-only">💾 Sauvegarder</button>
+            <button id="btn-load" class="edit-only">📂 Charger</button>
+            <button id="btn-toggle-view">🔒 Verrouiller (Mode Jeu)</button>
+        </div>
+
+        <h1>Fiche de Personnage</h1>
+
+        <div class="main-layout">
+            
+            <div class="column" id="col-left">
+                
+                <div class="form-group">
+                    <label for="char-name">Nom du personnage :</label>
+                    <input type="text" id="char-name" class="full-width">
+                </div>
+                <div class="form-group">
+                    <label for="char-class">Classe :</label>
+                    <input type="text" id="char-class" class="full-width">
+                </div>
+
+                <div class="header-grid">
+                    <div class="header-box"><label for="bonus-maitrise">Bonus de Maîtrise</label><input type="text" id="bonus-maitrise" value="+2"></div>
+                    <div class="header-box"><label for="ca">Classe d'Armure</label><input type="number" id="ca" value="10"></div>
+                    <div class="header-box"><label for="initiative">Initiative</label><input type="text" id="initiative" value="+0" readonly></div>
+                </div>
+
+                <h2>Combat</h2>
+                <div class="combat-stats-grid">
+                    <div class="pv-box">
+                        <div class="header-box"><label for="pv-max">PV Max</label><input type="number" id="pv-max" value="10"></div>
+                        <div class="header-box"><label for="pv-current">PV Actuels</label><input type="number" id="pv-current" value="10"></div>
+                    </div>
+                    <div class="header-box"><label for="des-vie">Dés de Vie</label><input type="text" id="des-vie" class="full-width" value="1d8"></div>
+                    <div class="header-box"><label for="seuil-blessure">Seuil de Blessure</label><input type="number" id="seuil-blessure" value="5"></div>
+                    <div class="header-box"><label for="fatigue">Fatigue (Niveau)</label><input type="number" id="fatigue" value="0"></div>
+                    <div class="death-saves">
+                        <label>Jets contre la Mort</label>
+                        <div><span>Succès</span><span class="check-group"><input type="checkbox" id="death-s-1"> <input type="checkbox" id="death-s-2"> <input type="checkbox" id="death-s-3"></span></div>
+                        <div><span>Échecs</span><span class="check-group"><input type="checkbox" id="death-f-1"> <input type="checkbox" id="death-f-2"> <input type="checkbox" id="death-f-3"></span></div>
+                    </div>
+                </div>
+
+                <div class="stats-and-slots-layout">
+                    
+                    <div class="stats-section">
+                        <h2>Statistiques & Compétences</h2>
+                        <div class="stats-container">
+                            <div class="stat-block">
+                                <div class="stat-header"><label for="stat-str">Force</label><input type="number" id="stat-str" class="stat-input" value="10"><span id="bonus-str" class="stat-bonus">+0</span></div>
+                                <ul class="skill-list">
+                                    <li><label for="js-str">Jet de Sauvegarde</label><span class="skill-checks"><input type="checkbox" id="maitrise-js-str" class="js-check" title="Maîtrise JS"></span></li>
+                                    <li><label for="skill-athletics">Athlétisme</label><span class="skill-checks"><input type="checkbox" id="maitrise-athletics" class="maitrise-check" title="Maîtrise"><input type="checkbox" id="expertise-athletics" class="expertise-check" title="Expertise"></span></li>
+                                </ul>
+                            </div>
+                            <div class="stat-block">
+                                <div class="stat-header"><label for="stat-dex">Dextérité</label><input type="number" id="stat-dex" class="stat-input" value="10"><span id="bonus-dex" class="stat-bonus">+0</span></div>
+                                <ul class="skill-list">
+                                    <li><label for="js-dex">Jet de Sauvegarde</label><span class="skill-checks"><input type="checkbox" id="maitrise-js-dex" class="js-check" title="Maîtrise JS"></span></li>
+                                    <li><label for="skill-acrobatics">Acrobaties</label><span class="skill-checks"><input type="checkbox" id="maitrise-acrobatics" class="maitrise-check" title="Maîtrise"><input type="checkbox" id="expertise-acrobatics" class="expertise-check" title="Expertise"></span></li>
+                                    <li><label for="skill-sleight-of-hand">Escamotage</label><span class="skill-checks"><input type="checkbox" id="maitrise-sleight-of-hand" class="maitrise-check" title="Maîtrise"><input type="checkbox" id="expertise-sleight-of-hand" class="expertise-check" title="Expertise"></span></li>
+                                    <li><label for="skill-stealth">Discrétion</label><span class="skill-checks"><input type="checkbox" id="maitrise-stealth" class="maitrise-check" title="Maîtrise"><input type="checkbox" id="expertise-stealth" class="expertise-check" title="Expertise"></span></li>
+                                </ul>
+                            </div>
+                            <div class="stat-block">
+                                <div class="stat-header"><label for="stat-con">Constitution</label><input type="number" id="stat-con" class="stat-input" value="10"><span id="bonus-con" class="stat-bonus">+0</span></div>
+                                <ul class="skill-list">
+                                    <li><label for="js-con">Jet de Sauvegarde</label><span class="skill-checks"><input type="checkbox" id="maitrise-js-con" class="js-check" title="Maîtrise JS"></span></li>
+                                </ul>
+                            </div>
+                            <div class="stat-block">
+                                <div class="stat-header"><label for="stat-int">Intelligence</label><input type="number" id="stat-int" class="stat-input" value="10"><span id="bonus-int" class="stat-bonus">+0</span></div>
+                                <ul class="skill-list">
+                                    <li><label for="js-int">Jet de Sauvegarde</label><span class="skill-checks"><input type="checkbox" id="maitrise-js-int" class="js-check" title="Maîtrise JS"></span></li>
+                                    <li><label for="skill-arcana">Arcanes</label><span class="skill-checks"><input type="checkbox" id="maitrise-arcana" class="maitrise-check" title="Maîtrise"><input type="checkbox" id="expertise-arcana" class="expertise-check" title="Expertise"></span></li>
+                                    <li><label for="skill-history">Histoire</label><span class="skill-checks"><input type="checkbox" id="maitrise-history" class="maitrise-check" title="Maîtrise"><input type="checkbox" id="expertise-history" class="expertise-check" title="Expertise"></span></li>
+                                    <li><label for="skill-investigation">Investigation</label><span class="skill-checks"><input type="checkbox" id="maitrise-investigation" class="maitrise-check" title="Maîtrise"><input type="checkbox" id="expertise-investigation" class="expertise-check" title="Expertise"></span></li>
+                                    <li><label for="skill-nature">Nature</label><span class="skill-checks"><input type="checkbox" id="maitrise-nature" class="maitrise-check" title="Maîtrise"><input type="checkbox" id="expertise-nature" class="expertise-check" title="Expertise"></span></li>
+                                    <li><label for="skill-religion">Religion</label><span class="skill-checks"><input type="checkbox" id="maitrise-religion" class="maitrise-check" title="Maîtrise"><input type="checkbox" id="expertise-religion" class="expertise-check" title="Expertise"></span></li>
+                                </ul>
+                            </div>
+                            <div class="stat-block">
+                                <div class="stat-header"><label for="stat-wis">Sagesse</label><input type="number" id="stat-wis" class="stat-input" value="10"><span id="bonus-wis" class="stat-bonus">+0</span></div>
+                                <ul class="skill-list">
+                                    <li><label for="js-wis">Jet de Sauvegarde</label><span class="skill-checks"><input type="checkbox" id="maitrise-js-wis" class="js-check" title="Maîtrise JS"></span></li>
+                                    <li><label for="skill-animal-handling">Dressage</label><span class="skill-checks"><input type="checkbox" id="maitrise-animal-handling" class="maitrise-check" title="Maîtrise"><input type="checkbox" id="expertise-animal-handling" class="expertise-check" title="Expertise"></span></li>
+                                    <li><label for="skill-insight">Perspicacité</label><span class="skill-checks"><input type="checkbox" id="maitrise-insight" class="maitrise-check" title="Maîtrise"><input type="checkbox" id="expertise-insight" class="expertise-check" title="Expertise"></span></li>
+                                    <li><label for="skill-medicine">Médecine</label><span class="skill-checks"><input type="checkbox" id="maitrise-medicine" class="maitrise-check" title="Maîtrise"><input type="checkbox" id="expertise-medicine" class="expertise-check" title="Expertise"></span></li>
+                                    <li><label for="skill-perception">Perception</label><span class="skill-checks"><input type="checkbox" id="maitrise-perception" class="maitrise-check" title="Maîtrise"><input type="checkbox" id="expertise-perception" class="expertise-check" title="Expertise"></span></li>
+                                    <li><label for="skill-survival">Survie</label><span class="skill-checks"><input type="checkbox" id="maitrise-survival" class="maitrise-check" title="Maîtrise"><input type="checkbox" id="expertise-survival" class="expertise-check" title="Expertise"></span></li>
+                                </ul>
+                            </div>
+                            <div class="stat-block">
+                                <div class="stat-header"><label for="stat-cha">Charisme</label><input type="number" id="stat-cha" class="stat-input" value="10"><span id="bonus-cha" class="stat-bonus">+0</span></div>
+                                <ul class="skill-list">
+                                    <li><label for="js-cha">Jet de Sauvegarde</label><span class="skill-checks"><input type="checkbox" id="maitrise-js-cha" class="js-check" title="Maîtrise JS"></span></li>
+                                    <li><label for="skill-deception">Tromperie</label><span class="skill-checks"><input type="checkbox" id="maitrise-deception" class="maitrise-check" title="Maîtrise"><input type="checkbox" id="expertise-deception" class="expertise-check" title="Expertise"></span></li>
+                                    <li><label for="skill-intimidation">Intimidation</label><span class="skill-checks"><input type="checkbox" id="maitrise-intimidation" class="maitrise-check" title="Maîtrise"><input type="checkbox" id="expertise-intimidation" class="expertise-check" title="Expertise"></span></li>
+                                    <li><label for="skill-performance">Représentation</label><span class="skill-checks"><input type="checkbox" id="maitrise-performance" class="maitrise-check" title="Maîtrise"><input type="checkbox" id="expertise-performance" class="expertise-check" title="Expertise"></span></li>
+                                    <li><label for="skill-persuasion">Persuasion</label><span class="skill-checks"><input type="checkbox" id="maitrise-persuasion" class="maitrise-check" title="Maîtrise"><input type="checkbox" id="expertise-persuasion" class="expertise-check" title="Expertise"></span></li>
+                                </ul>
+                            </div>
+                        </div> </div> <div class="list-section">
+                        <h2>Emplacements de Sorts</h2>
+                        <div class="spell-slots-container">
+                            <div class="spell-slot-box"><label>Niv 1</label><div><input type="number" id="slot-1-current" class="spell-slot-input" placeholder="Act"> / <input type="number" id="slot-1-max" class="spell-slot-input" placeholder="Max"></div></div>
+                            <div class="spell-slot-box"><label>Niv 2</label><div><input type="number" id="slot-2-current" class="spell-slot-input" placeholder="Act"> / <input type="number" id="slot-2-max" class="spell-slot-input" placeholder="Max"></div></div>
+                            <div class="spell-slot-box"><label>Niv 3</label><div><input type="number" id="slot-3-current" class="spell-slot-input" placeholder="Act"> / <input type="number" id="slot-3-max" class="spell-slot-input" placeholder="Max"></div></div>
+                            <div class="spell-slot-box"><label>Niv 4</label><div><input type="number" id="slot-4-current" class="spell-slot-input" placeholder="Act"> / <input type="number" id="slot-4-max" class="spell-slot-input" placeholder="Max"></div></div>
+                            <div class="spell-slot-box"><label>Niv 5</label><div><input type="number" id="slot-5-current" class="spell-slot-input" placeholder="Act"> / <input type="number" id="slot-5-max" class="spell-slot-input" placeholder="Max"></div></div>
+                            <div class="spell-slot-box"><label>Niv 6</label><div><input type="number" id="slot-6-current" class="spell-slot-input" placeholder="Act"> / <input type="number" id="slot-6-max" class="spell-slot-input" placeholder="Max"></div></div>
+                            <div class="spell-slot-box"><label>Niv 7</label><div><input type="number" id="slot-7-current" class="spell-slot-input" placeholder="Act"> / <input type="number" id="slot-7-max" class="spell-slot-input" placeholder="Max"></div></div>
+                            <div class="spell-slot-box"><label>Niv 8</label><div><input type="number" id="slot-8-current" class="spell-slot-input" placeholder="Act"> / <input type="number" id="slot-8-max" class="spell-slot-input" placeholder="Max"></div></div>
+                            <div class="spell-slot-box"><label>Niv 9</label><div><input type="number" id="slot-9-current" class="spell-slot-input" placeholder="Act"> / <input type="number" id="slot-9-max" class="spell-slot-input" placeholder="Max"></div></div>
+                        </div>
+                    </div>
+
+                </div> <div class="list-section">
+                    <h2>Inventaire (sur soi)</h2>
+                    <textarea id="inventory-notes" class="full-width" rows="10" placeholder="ex: 3 potions de soin, 25 PO, Corde (15m), ..."></textarea>
+                </div>
+
+            </div> <div class="column" id="col-right">
+                
+                <div class="portrait-container" id="portrait-container">
+                    <img src="" alt="Portrait du personnage" id="char-portrait-img">
+                    <label for="portrait-upload" id="portrait-label" class="edit-only">📷 Cliquer pour charger une image</label>
+                    <input type="file" id="portrait-upload" accept="image/*" class="edit-only">
+                </div>
+
+                <div class="list-section">
+                    <h2>Résistances & Immunités</h2>
+                    <textarea id="resistances" class="full-width" rows="4"></textarea>
+                </div>
+
+                <div class="list-section">
+                    <h2>Attaques</h2>
+                    <div class="add-item-group-tabled edit-only">
+                        <input type="text" id="new-attack-name" placeholder="Nom" class="full-width">
+                        <input type="text" id="new-attack-bonus" placeholder="Bonus" class="full-width">
+                        <input type="text" id="new-attack-dmg" placeholder="Dégâts" class="full-width">
+                        <button id="btn-add-attack">+</button>
+                    </div>
+                    <table class="item-table">
+                        <thead><tr><th>Nom</th><th>Bonus Atk</th><th>Dégâts / Type</th><th class="edit-only"></th></tr></thead>
+                        <tbody id="attack-list"></tbody>
+                    </table>
+                </div>
+
+                <div class="list-section">
+                    <h2>Sorts & Capacités</h2>
+                    <div class="add-item-group-tabled edit-only">
+                        <input type="text" id="new-spell-name" placeholder="Nom" class="full-width">
+                        <input type="text" id="new-spell-bonus" placeholder="Info 1 (ex: CD 13)" class="full-width">
+                        <input type="text" id="new-spell-dmg" placeholder="Info 2 (ex: Rituel)" class="full-width">
+                        <button id="btn-add-spell">+</button>
+                    </div>
+                    <table class="item-table">
+                        <thead><tr><th>Nom</th><th>Info 1</th><th>Info 2</th><th class="edit-only"></th></tr></thead>
+                        <tbody id="spell-list"></tbody>
+                    </table>
+                </div>
+                
+                <div class="list-section notes-section">
+                    <h2>Notes de campagne</h2>
+                    <textarea id="char-notes" class="full-width"></textarea>
+                </div>
+
+            </div> </div> </div> <script src="script.js"></script>
+</body>
+</html>
