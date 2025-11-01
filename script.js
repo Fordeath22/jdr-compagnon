@@ -468,7 +468,8 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (isViewMode) {
             // --- On passe en MODE VUE ---
-            viewToggleButton.textContent = '🔓 Déverrouiller (Mode Édition)';
+            viewToggleButton.textContent = '🔓';
+            viewToggleButton.title = 'Déverrouiller (Mode Édition)'
             // Verrouille les champs texte/numériques fixes
             fieldsToLock.forEach(field => {
                 field.readOnly = true;
@@ -477,7 +478,8 @@ document.addEventListener('DOMContentLoaded', () => {
             
         } else {
             // --- On passe en MODE ÉDITION ---
-            viewToggleButton.textContent = '🔒 Verrouiller (Mode Jeu)';
+            viewToggleButton.textContent = '🔒';
+            viewToggleButton.title = 'Verrouiller (Mode Jeu)'
             // Déverrouille les champs
             fieldsToLock.forEach(field => {
                 field.readOnly = false;
