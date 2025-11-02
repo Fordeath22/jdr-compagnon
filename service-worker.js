@@ -1,5 +1,5 @@
 // Le nom de notre "boîte" de sauvegarde (cache)
-const CACHE_NAME = 'jdr-compagnon-v1';
+const CACHE_NAME = 'jdr-compagnon-v2';
 
 // La liste de tous les fichiers de base de notre application
 // IMPORTANT : Ajoutez ici tous les fichiers que vous voulez mettre en cache
@@ -63,4 +63,5 @@ self.addEventListener('activate', (event) => {
       );
     })
   );
+
 });
